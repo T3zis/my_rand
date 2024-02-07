@@ -57,7 +57,7 @@ public:
     return res;
   }
   
-  void my_srand(uint32_t seed, bool random)
+  void my_srand(my_rand_t seed, bool random)
   {
     if (random)
       seedrand();
