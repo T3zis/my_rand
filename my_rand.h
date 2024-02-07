@@ -1,82 +1,85 @@
-#ifndef MY_RANDOM
-#define MY_RANDOM
+#ifndef MYRANDOM_HEADER
+#define MYRANDOM_HEADER
 
-
+#include <cstdint>
 #include <iostream>
 #include <ctime>
 
+typedef uint32_t my_rand_t;
+
+#undef M
+#define M 0x7fffffff
+#undef A
+#define A 16807
+#undef OP
+#define OP(x) ((x * A) % M)
 
 class my_random
 {
 private:
-  int your_seed(int user_seed)
+  my_rand_t seed = 0;
+  
+  my_rand_t generate_random_seed(void)
   {
-    int a = 16807;
-    unsigned int m = 0x7fffffff;
-
-
-    user_seed = (user_seed * a) % m;
-
-
-    return user_seed;
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+      return -1;
+    return ((my_rand_t)(ts.tv_sec * 1000000000ULL + ts.tv_nsec));
   }
 
-
-  int generate_random_seed()
+  my_rand_t seedrand(void)
   {
-    static int seed = static_cast<int>(std::time(nullptr));
-    int a = 16807;
-    unsigned int m = 0x7fffffff;
-
-
-    seed = (seed * a) % m;
-
-
-    return seed;
+    my_rand_t seed;
+    seed = generate_random_seed();
+    return (this->seed = OP(seed));
+  }
+  
+  my_rand_t seedproc(uint32_t seed)
+  {
+    return (this->seed = OP(seed));
   }
 
 public:
-  int my_rand(int minus_or_plus)
+  my_rand_t my_rand(void)
   {
-    int new_seed = generate_random_seed();
-
-
-    if (minus_or_plus <= 0)
-      new_seed *= -1;
-
-
-    new_seed %= minus_or_plus;
-    return new_seed;
+/* delete recursion: #define NOREC */    
+ #ifdef NOREC
+    static my_rand_t tmp = 0;
+#endif      
+    my_rand_t res = 0;
+    
+    res = (seed * 1103515245 + 12345) & M;
+#ifdef NOREC      
+    if (res == tmp)
+      return (my_rand());
+    tmp = res;
+#endif
+    return res;
   }
-
-
-  int smy_rand(int user_seed, int minus_or_plus)
+  
+  void my_srand(uint32_t seed, bool random)
   {
-    int new_seed = your_seed(user_seed);
-
-
-    if (minus_or_plus <= 0)
-      new_seed *= -1;
-    new_seed %= minus_or_plus;
-
-
-    return new_seed;
+    if (random)
+      seedrand();
+    else
+      seedproc(seed);
   }
-
-
-  int rmy_rand(int min_value, int max_value)
+  
+  my_rand_t rmy_rand(int max, int min)
   {
-    int new_seed = generate_random_seed();
-
-
-    int range = max_value - min_value + 1;
-    new_seed = (new_seed % range + range) % range + min_value;
-
-
-    return new_seed;
+    if (min >= max)
+      return -1;
+    
+    if (seed == 0)
+      seedrand();
+    
+    return min + my_rand() % (max - min + 1);
+  }
+  
+  my_rand_t rzmy_rand(int max)
+  {
+    return (rmy_rand(max, 0));
   }
 };
-
-
 
 #endif
