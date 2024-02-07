@@ -34,7 +34,7 @@ private:
     return (this->seed = OP(seed));
   }
   
-  my_rand_t seedproc(uint32_t seed)
+  my_rand_t seedproc(my_rand_t seed)
   {
     return (this->seed = OP(seed));
   }
@@ -65,7 +65,7 @@ public:
       seedproc(seed);
   }
   
-  my_rand_t rmy_rand(int max, int min)
+  my_rand_t rmy_rand(my_rand_t max, my_rand_t min)
   {
     if (min >= max)
       return -1;
