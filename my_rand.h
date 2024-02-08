@@ -14,7 +14,7 @@ typedef uint32_t my_rand_t;
 #undef OP
 #define OP(x) ((x * A) % M)
 
-class my_random
+class MyRandom
 {
 private:
   my_rand_t seed = 0;
